@@ -1,0 +1,9 @@
+<div>
+    <h1>Note List</h1>
+    <ul>
+        {% for note in notes %}
+        <li>{{ note.title }} - {{ note.content }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'note_create' %}">Create New Note</a>
+</div>
