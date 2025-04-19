@@ -9,7 +9,10 @@
             <button>My info</button>
         </li>
         <li>
-            <button>My Notes</button>
+            <form method="get" action="{% url 'notes' %}">
+                {%csrf_token%}
+                <button type="submit">Show notes</button>
+            </form>
         </li>
         <li>
             <form method="post" action="{% url 'logout' %}">

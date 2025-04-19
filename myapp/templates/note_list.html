@@ -5,5 +5,11 @@
         <li>{{ note.title }} - {{ note.content }}</li>
         {% endfor %}
     </ul>
-    <a href="{% url 'note_create' %}">Create New Note</a>
+
+    <div>
+        <form method="get" action="{% url 'create_note' %}">
+            <button type="submit">Create note</button>
+        </form>
+    </div>
+
 </div>

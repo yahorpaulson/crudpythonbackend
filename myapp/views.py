@@ -9,9 +9,10 @@ from django.shortcuts import render, redirect
 from myapp.auth import auth
 from myapp.tokens import refresh_access_token, create_token_pair, get_user_by_token, delete_token_pair
 from myapp.register import register_user
+from myapp.services import get_all_notes
 
 
-# Create your views here.
+
 
 def register(request):
     
@@ -92,18 +93,25 @@ def logout(request):
     return response
 
 
+def create_note(request):
+    return redirect('add_note')
+
+
 
         
 
 
-def note_list_create(request):
+def add_note(request):
     if request.method == 'POST':
         
         title = request.POST.get('title')
         content = request.POST.get('content')
         color = request.POST.get('color')
 
-        owner_id = request.POST.get('owner_id')
+        access_token = request.COOKIES.get('access_token')
+        user = get_user_by_token(access_token)
+
+        owner_id = user.id
         
         Note.objects.create(
             title=title,
@@ -112,20 +120,26 @@ def note_list_create(request):
             owner_id=owner_id
         )
 
-        return redirect('note_list')
+        return redirect('notes')
     
 
     notes = Note.objects.all()
 
-    return HttpResponse("Note list create view")
+    return render(request, 'add_note.html')
 
 
-def notes_get(request, user_id):
-    if request.method == 'GET':
-        notes = Note.objects.filter(owner_id=user_id)
-        return render(request, 'notes_get.html', {'notes': notes})
-    else:
-        return HttpResponse("Method not allowed", status=405)
+def show_notes(request):
+    access_token = request.COOKIES.get('access_token')
+    user = get_user_by_token(access_token)
+
+    if not user:
+        return redirect('login')
+    
+    notes = get_all_notes(user.id)
+    return render(request, 'note_list.html', {'notes': notes})
+
+
+
     
 def notes_get_by_id(request, user_id, note_id):
     if request.method == 'GET':

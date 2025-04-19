@@ -1,0 +1,17 @@
+<div>
+    <h1>User Info</h1>
+
+    <div>
+        <form method="get" action="{% url 'info' %}"></form>
+    </div>
+    <div>
+        <form method="post" action="{% url 'new_note' %}">
+            {% csrf token %}
+            <button type="submit">Create new note</button>
+        </form>
+        <form method="get" action="{% url 'notes' %}">
+            {% csrf token %}
+            <button type="submit">Show notes</button>
+        </form>
+    </div>
+</div>

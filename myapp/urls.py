@@ -5,10 +5,9 @@ urlpatterns= [
     path('register', views.register, name='register'),
     path('login', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
-    path('notes', views.note_list_create, name='note_list_create'),
+    path('notes', views.show_notes, name='notes'),
+    path('create_note', views.create_note, name='create_note'),
+    path('add_note', views.add_note, name='add_note'),
     path('refresh', views.refresh_token, name='refresh_token'),
     path('', views.main_view, name='main'),
-    path ('notes/<int:user_id>', views.notes_get, name='notes_get'),
-    path ('notes/<int:user_id>/<int:note_id>', views.notes_get_by_id, name='notes_get_by_id'),
-    path ('notes/<int:user_id>/<int:note_id>/delete', views.notes_delete, name='notes_delete'),
 ]
