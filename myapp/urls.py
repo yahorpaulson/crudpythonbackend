@@ -6,6 +6,7 @@ urlpatterns= [
     path('login', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
     path('notes', views.note_list_create, name='note_list_create'),
+    path('refresh', views.refresh_token, name='refresh_token'),
     path('', views.main_view, name='main'),
     path ('notes/<int:user_id>', views.notes_get, name='notes_get'),
     path ('notes/<int:user_id>/<int:note_id>', views.notes_get_by_id, name='notes_get_by_id'),

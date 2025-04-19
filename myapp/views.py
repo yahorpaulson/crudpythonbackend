@@ -34,14 +34,11 @@ def login(request):
         username= request.POST.get('username')
         password= request.POST.get('password')
 
-        
-
         user = auth(username, password)
 
-        UserTokenPair.objects.filter(user=user).delete()
-
-        
         if user:
+            UserTokenPair.objects.filter(user=user).delete()
+
             token = create_token_pair(user)
             response = redirect('main')
             response.set_cookie('access_token', token['access'])
@@ -54,7 +51,32 @@ def login(request):
 
 
 def main_view(request):
-    return render(request, 'myapp/main.html')
+    access_token = request.COOKIES.get('access_token')
+    if not access_token:
+        messages.error(request, 'Login first!')
+        return redirect('login')
+    
+    user = get_user_by_token(access_token)
+    if not user:
+        messages.error(request, 'Session expired! Please login again.')
+        return redirect('login')
+
+    return render(request, 'main.html', {'user': user})
+
+def refresh_token(request):
+    refresh_token = request.COOKIES.get('refresh_token')
+
+
+    if not refresh_token:
+        return JsonResponse({'error': 'No refresh token'})
+    
+    try:
+        data = refresh_access_token(refresh_token)
+        response = JsonResponse({'message':'Access token refreshed'})
+        response.set_cookie('access_token', data['access'])
+        return response
+    except Exception as e:
+        return JsonResponse({'error', str(e)}, status=401)
 
 
 def logout(request):
@@ -117,7 +139,18 @@ def notes_get_by_id(request, user_id, note_id):
     
 
 def main_view(request):
-    return render(request, 'main.html')
+    access_token = request.COOKIES.get('access_token')
+    print("ACCESS_TOKEN:", access_token)
+
+    user = get_user_by_token(access_token)
+    print("USER:", user)
+
+    if not user:
+        messages.error(request, 'Session expired!')
+        return redirect('login')
+
+    return render(request, 'main.html', {'user': user})
+
     
 
 

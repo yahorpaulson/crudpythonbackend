@@ -38,7 +38,7 @@ def refresh_access_token(refresh_token):
         
 
         new_access = str(uuid.uuid4())
-        new_expiry = timezone_now() + timedelta(minutes=15)
+        new_expiry = timezone_now() + timedelta(minutes=30)
 
 
         token.access = new_access  # Update the access token
@@ -66,6 +66,8 @@ def delete_token_pair(user_id):
 def get_user_by_token(access_token):
     try:
         token_pair = UserTokenPair.objects.get(access=access_token)
+        if token_pair.access_expiry < timezone_now():
+            return None
         return token_pair.user
     except UserTokenPair.DoesNotExist:
         return None
