@@ -37,14 +37,18 @@ def login(request):
         
         if user:
             token = create_token_pair(user)
-            return JsonResponse({
-                'message': 'Login successful',
-                'user_id': user.id,
-                **token
-            })
+            response = redirect('main')
+            response.set_cookie('access_token', token['access'])
+            response.set_cookie('refresh_token', token['refresh'])
+            return response
         
         return JsonResponse({'error': 'Invalid credentials'}, status=401)
-    return render(request, 'myapp/templates/login.html')
+    return render(request, 'login.html')
+
+
+
+def main_view(request):
+    return render(request, 'myapp/main.html')
 
         
 
@@ -89,6 +93,10 @@ def notes_get_by_id(request, user_id, note_id):
             return HttpResponse("Note not found", status=404)
     else:
         return HttpResponse("Method not allowed", status=405)
+    
+
+def main_view(request):
+    return render(request, 'main.html')
     
 
 def logout(request):
