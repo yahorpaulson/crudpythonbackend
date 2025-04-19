@@ -2,13 +2,14 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from .models import Note
 from django.http import HttpResponse, JsonResponse
-from .models import User
+from .models import UserTokenPair
 from .forms import NoteForm, UserForm
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from myapp.auth import auth
-from myapp.tokens import refresh_access_token, create_token_pair
+from myapp.tokens import refresh_access_token, create_token_pair, get_user_by_token, delete_token_pair
 from myapp.register import register_user
+
 
 # Create your views here.
 
@@ -33,7 +34,12 @@ def login(request):
         username= request.POST.get('username')
         password= request.POST.get('password')
 
+        
+
         user = auth(username, password)
+
+        UserTokenPair.objects.filter(user=user).delete()
+
         
         if user:
             token = create_token_pair(user)
@@ -49,6 +55,21 @@ def login(request):
 
 def main_view(request):
     return render(request, 'myapp/main.html')
+
+
+def logout(request):
+    access_token = request.COOKIES.get('access_token')
+    if access_token:
+        user = get_user_by_token(access_token)
+        delete_token_pair(user.id)
+
+
+    response = redirect('login') 
+    response.delete_cookie('access_token') #delete from users browser
+    response.delete_cookie('refresh_token') 
+    return response
+
+
 
         
 
@@ -99,11 +120,7 @@ def main_view(request):
     return render(request, 'main.html')
     
 
-def logout(request):
-    if request.method == 'POST':
-        auth_logout(request)
-        return redirect('login')
-    return render(request, 'logout.html')
+
 
 
 def notes_delete(request, user_id, note_id):

@@ -61,4 +61,12 @@ def delete_token_pair(user_id):
         token.delete()
     except UserTokenPair.DoesNotExist:
         raise Exception("Token pair does not exist")
+    
+
+def get_user_by_token(access_token):
+    try:
+        token_pair = UserTokenPair.objects.get(access=access_token)
+        return token_pair.user
+    except UserTokenPair.DoesNotExist:
+        return None
 

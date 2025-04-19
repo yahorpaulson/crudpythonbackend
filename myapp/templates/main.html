@@ -2,13 +2,17 @@
     <h1>Main User Page</h1>
     <ul>
         <li>
+            <form method="get" action=""></form>
             <button>My info</button>
         </li>
         <li>
             <button>My Notes</button>
         </li>
         <li>
-            <button>Logout</button>
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
         </li>
     </ul>
 </div>
