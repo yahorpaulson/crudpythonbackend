@@ -2,13 +2,42 @@
     <h1>Note List</h1>
     <ul>
         {% for note in notes %}
-        <li>{{ note.title }} - {{ note.content }}</li>
+        <li>{{note.color}} - {{ note.title }} - {{ note.content }}</li>
         {% endfor %}
     </ul>
 
     <div>
         <form method="get" action="{% url 'create_note' %}">
+
             <button type="submit">Create note</button>
+        </form>
+    </div>
+
+    <div>
+        <form method="post" action="{% url 'change_note' %}">
+            {% csrf_token %}
+
+            <label>Note to update (by title):</label><br>
+            <input type="text" name="title" placeholder="Current title"><br><br>
+
+            <label>Choose what to change:</label><br>
+
+            <input type="radio" id="title" name="note_params" value="title" checked>
+            <label for="title">Title</label><br>
+
+            <input type="radio" id="content" name="note_params" value="content">
+            <label for="content">Content</label><br>
+
+            <input type="radio" id="color" name="note_params" value="color">
+            <label for="color">Color</label><br><br>
+
+            <label>New value:</label><br>
+            <input type="text" name="note_params"><br><br>
+            <label>New color:</label><br>
+            <input type="color" name="note_params_color"><br><br>
+
+
+            <button type="submit">Change note</button>
         </form>
     </div>
 
@@ -24,3 +53,4 @@
         </form>
 
     </div>
+</div>

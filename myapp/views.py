@@ -3,7 +3,7 @@ from django.shortcuts import redirect
 from .models import Note
 from django.http import HttpResponse, JsonResponse
 from .models import UserTokenPair
-from .forms import NoteForm, UserForm
+from .forms import UserForm
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from myapp.auth import auth
@@ -123,8 +123,6 @@ def add_note(request):
         return redirect('notes')
     
 
-    notes = Note.objects.all()
-
     return render(request, 'add_note.html')
 
 
@@ -140,6 +138,9 @@ def deleteNoteByTitle(request):
     if request.method == 'POST':
         if request.POST.get('title') == "":
             messages.error(request, 'Empty title field')
+            print('Empty title field')
+            return redirect('notes')
+
         
         notes = get_all_notes(user.id)
 
@@ -148,10 +149,13 @@ def deleteNoteByTitle(request):
         for note in notes:
             if note.title == request.POST.get('title'):
                 target_note = note
-                return JsonResponse({'note': str(note.title)}, status=302)
+                note.delete()
+                return redirect('notes')
         
-        if not target_note:
+        if target_note == None:
             messages.error(request, 'Empty title field')
+            print('Not found')
+
             return redirect('notes')
     
 
@@ -175,10 +179,10 @@ def show_notes(request):
 
 def main_view(request):
     access_token = request.COOKIES.get('access_token')
-    print("ACCESS_TOKEN:", access_token)
+    
 
     user = get_user_by_token(access_token)
-    print("USER:", user)
+    
 
     if not user:
         messages.error(request, 'Session expired!')
@@ -186,30 +190,66 @@ def main_view(request):
 
     return render(request, 'main.html', {'user': user})
 
-    
 
-
-
-
-def notes_delete(request, user_id, note_id):
+def change_note(request):
     if request.method == 'POST':
-        try:
-            note = Note.objects.get(owner_id=user_id, id=note_id)
-            note.delete()
-            return redirect('note_list')
-        except Note.DoesNotExist:
-            return HttpResponse("Note not found", status=404)
-    else:
-        return HttpResponse("Method not allowed", status=405)
-    
 
-    def refresh_token(request):
-        if request.method == 'POST':
-            refresh = request.POST.get('refresh')
-            try:
-               result = refresh_access_token(refresh)
-               return JsonResponse(result, status=200)
-            except ValueError as e:
-                return JsonResponse({'error': str(e)}, status=401)
+        access_token = request.COOKIES.get('access_token')
+        
+
+        user = get_user_by_token(access_token)
+
+
+        if not user:
+            messages.error(request, 'Session expired!')
+            return redirect('login')
+
+        input_title = request.POST.get('title')
+
+        notes = get_all_notes(user.id)
+
+        for note in notes:
+            if note.title == input_title:
+                param = request.POST.get('note_params')
+                print(param)
+                if param == "":
+                    print("Empty")
+                    param = request.POST.get('note_params_color')
+                    print(param + " with color")
+
+
+                
+                
+                radio_value = request.POST.getlist('note_params')[0]
+
+                print(radio_value)
+            
+                if radio_value == "title":
+                    note.title = param
+                    print(note.title + " is a new Title")
+                elif radio_value == "content":
+                    note.content = param
+                    print(note.content + " is a new Content")
+                elif radio_value == "color":
+                    note.color = param
+
+                note.save()
+           
+        
+        return redirect('notes')
+
+
+        
+        
+
+    
+def refresh_token(request):
+    if request.method == 'POST':
+        refresh = request.POST.get('refresh')
+        try:
+            result = refresh_access_token(refresh)
+            return JsonResponse(result, status=200)
+        except ValueError as e:
+            return JsonResponse({'error': str(e)}, status=401)
             
 
