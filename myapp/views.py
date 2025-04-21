@@ -128,6 +128,37 @@ def add_note(request):
     return render(request, 'add_note.html')
 
 
+
+
+def deleteNoteByTitle(request):
+    access_token = request.COOKIES.get('access_token')
+    user = get_user_by_token(access_token)
+
+    if not user:
+        return redirect('login')
+    
+    if request.method == 'POST':
+        if request.POST.get('title') == "":
+            messages.error(request, 'Empty title field')
+        
+        notes = get_all_notes(user.id)
+
+        target_note = None
+
+        for note in notes:
+            if note.title == request.POST.get('title'):
+                target_note = note
+                return JsonResponse({'note': str(note.title)}, status=302)
+        
+        if not target_note:
+            messages.error(request, 'Empty title field')
+            return redirect('notes')
+    
+
+       
+
+
+
 def show_notes(request):
     access_token = request.COOKIES.get('access_token')
     user = get_user_by_token(access_token)
@@ -140,16 +171,6 @@ def show_notes(request):
 
 
 
-    
-def notes_get_by_id(request, user_id, note_id):
-    if request.method == 'GET':
-        try:
-            note = Note.objects.get(owner_id=user_id, id=note_id)
-            return render(request, 'notes_get_by_id.html', {'note': note})
-        except Note.DoesNotExist:
-            return HttpResponse("Note not found", status=404)
-    else:
-        return HttpResponse("Method not allowed", status=405)
     
 
 def main_view(request):

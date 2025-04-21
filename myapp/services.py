@@ -10,7 +10,7 @@ def create_note(data, user_id):
 def get_all_notes(user_id):
     return Note.objects.filter(owner_id=user_id) # Retrieve all notes for a specific user by their ID
 
-
+#TODO: logic of checking user
 
 
 def generate_token_pair(user):

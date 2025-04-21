@@ -12,4 +12,15 @@
         </form>
     </div>
 
-</div>
+    <div>
+
+
+        <form method="post" action="{% url 'deleteNoteByTitle' %}"> <!--no delete method in forms-->
+            {%csrf_token%}
+            <label>Enter note title to delete</label>
+            <input type="text" name="title" value="Note title">
+
+            <button type="submit">Delete Note</button>
+        </form>
+
+    </div>
