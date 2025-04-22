@@ -1,15 +1,14 @@
-from django.shortcuts import render
-from django.shortcuts import redirect
+
 from .models import Note
-from django.http import HttpResponse, JsonResponse
+from django.http import  JsonResponse
 from .models import UserTokenPair
 from .forms import UserForm
-from django.contrib import messages
 from django.shortcuts import render, redirect
 from myapp.auth import auth
 from myapp.tokens import refresh_access_token, create_token_pair, get_user_by_token, delete_token_pair
 from myapp.register import register_user
-from myapp.services import get_all_notes
+from myapp.services import get_all_notes, validate_user
+
 
 
 
@@ -21,7 +20,7 @@ def register(request):
         if form.is_valid():
             try:
                 register_user(form.cleaned_data)
-                messages.success(request, 'User registered successfully')
+                print('User registered successfully')
                 return redirect('login')
             except ValueError as e:
                 form.add_error(None, str(e))
@@ -52,17 +51,11 @@ def login(request):
 
 
 def main_view(request):
-    access_token = request.COOKIES.get('access_token')
-    if not access_token:
-        messages.error(request, 'Login first!')
-        return redirect('login')
-    
-    user = get_user_by_token(access_token)
-    if not user:
-        messages.error(request, 'Session expired! Please login again.')
-        return redirect('login')
+    validate_user(request)
 
-    return render(request, 'main.html', {'user': user})
+    return render(request, 'main.html')
+
+
 
 def refresh_token(request):
     refresh_token = request.COOKIES.get('refresh_token')
@@ -108,8 +101,7 @@ def add_note(request):
         content = request.POST.get('content')
         color = request.POST.get('color')
 
-        access_token = request.COOKIES.get('access_token')
-        user = get_user_by_token(access_token)
+        user = validate_user(request)
 
         owner_id = user.id
         
@@ -129,15 +121,10 @@ def add_note(request):
 
 
 def deleteNoteByTitle(request):
-    access_token = request.COOKIES.get('access_token')
-    user = get_user_by_token(access_token)
-
-    if not user:
-        return redirect('login')
+    user = validate_user(request)
     
     if request.method == 'POST':
         if request.POST.get('title') == "":
-            messages.error(request, 'Empty title field')
             print('Empty title field')
             return redirect('notes')
 
@@ -153,7 +140,6 @@ def deleteNoteByTitle(request):
                 return redirect('notes')
         
         if target_note == None:
-            messages.error(request, 'Empty title field')
             print('Not found')
 
             return redirect('notes')
@@ -178,31 +164,16 @@ def show_notes(request):
     
 
 def main_view(request):
-    access_token = request.COOKIES.get('access_token')
-    
-
-    user = get_user_by_token(access_token)
-    
-
-    if not user:
-        messages.error(request, 'Session expired!')
+    if not validate_user(request):
         return redirect('login')
 
-    return render(request, 'main.html', {'user': user})
+    return render(request, 'main.html')
 
 
 def change_note(request):
     if request.method == 'POST':
 
-        access_token = request.COOKIES.get('access_token')
-        
-
-        user = get_user_by_token(access_token)
-
-
-        if not user:
-            messages.error(request, 'Session expired!')
-            return redirect('login')
+        user = validate_user(request)
 
         input_title = request.POST.get('title')
 
